@@ -9,6 +9,26 @@ resource "aws_instance" "master-1" {
   tags = {
     Name = "master-1"
   }
+
+  provisioner "file" {
+    source = "k8s-node-base.sh"
+    destination = "/tmp/k8s-node-base.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/k8s-node-base.sh",
+      "sudo /tmp/k8s-node-base.sh"
+    ]
+  }
+
+  connection {
+    type     = "ssh"
+    user     = "ec2-user"
+    host     = self.public_ip
+    private_key = file("${local_file.private_key.filename}")
+  }
+
 }
 
 resource "aws_instance" "worker-1" {
@@ -22,6 +42,29 @@ resource "aws_instance" "worker-1" {
   tags = {
     Name = "worker-1"
   }
+
+  provisioner "file" {
+    source = "k8s-node-base.sh"
+    destination = "/tmp/k8s-node-base.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/k8s-node-base.sh",
+      "sudo /tmp/k8s-node-base.sh"
+    ]
+  }
+
+  # For the worker nodes we will use the master nodes as bastion hosts
+  connection {
+    type                  = "ssh"
+    bastion_host          = "${aws_instance.master-1.public_ip}"
+    bastion_private_key   = file("${local_file.private_key.filename}")
+    bastion_user          = "ec2-user"
+    host                  = self.private_ip
+    private_key           = file("${local_file.private_key.filename}")
+    user                  = "ec2-user"
+  }
 }
 
 resource "aws_instance" "worker-2" {
@@ -34,6 +77,29 @@ resource "aws_instance" "worker-2" {
 
   tags = {
     Name = "worker-2"
+  }
+
+  provisioner "file" {
+    source = "k8s-node-base.sh"
+    destination = "/tmp/k8s-node-base.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/k8s-node-base.sh",
+      "sudo /tmp/k8s-node-base.sh"
+    ]
+  }
+
+  # For the worker nodes we will use the master nodes as bastion hosts
+  connection {
+    type                  = "ssh"
+    bastion_host          = "${aws_instance.master-1.public_ip}"
+    bastion_private_key   = file("${local_file.private_key.filename}")
+    bastion_user          = "ec2-user"
+    host                  = self.private_ip
+    private_key           = file("${local_file.private_key.filename}")
+    user                  = "ec2-user"
   }
 }
 
