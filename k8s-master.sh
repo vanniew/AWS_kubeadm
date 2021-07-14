@@ -1,3 +1,8 @@
+#! /bin/bash
+
+# Initialize the master node with kubeadm and install the Calico operator
+# The Calico Operator will automatically install the required Calico CNI network components on all of the nodes
+
 # Run kubeadm
 sudo kubeadm init --pod-network-cidr=192.168.0.0/16
 
@@ -25,8 +30,7 @@ spec:
       nodeSelector: all()
 EOF
 
-kubeadm token create --print-join-command > worker-join-token
+kubeadm token create --print-join-command > join-node.sh
 
-# This output is generated at the end of the kubeadm command
-# Adding K8s nodes is done with running this command as root on any node you want to add
-# kubeadm join 10.2.101.76:6443 --token 1b24tu.n7vtvttr7ts3syxf --discovery-token-ca-cert-hash sha256:40d308baca9d8de8edd206e04affdc49a59cf30ba2b1a04dde2ecd37778636db
+# Manually run the command stored in the worker-join-token file on every worker node that joins the cluster.
+# The token expires in 24 hours. After that time expired, create a new token on the master node using the same command.

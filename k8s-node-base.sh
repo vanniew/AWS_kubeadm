@@ -1,5 +1,11 @@
 #! /bin/bash
 
+# This shell script installs all the prequisite components to start a kubernetes node
+# on a new provisioned AWS amazon-linux instance
+# The components installed include docker, kubelet, kubeadm and kubectl
+# Initialization of the master-node with kube-adm is in a different script.
+# This script only contains operations that are the same on worker and master nodes
+
 # Ensure that IPTables can see bridged traffic. br_netfilter module should be loaded net.bridge.bridge-nf-call-iptables shoudl be set to 1
 # Check that BR_NETFIlTER module is properly installed sudo sysctl --system
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf

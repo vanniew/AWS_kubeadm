@@ -1,3 +1,7 @@
+# Provisions masternode, two workernodes and associated security groups
+# Uses provisioners to prepare the nodes for kubernetes,
+# initialize the master node and join the worker nodes to the cluster
+
 resource "aws_instance" "master-1" {
   ami                         = var.ami_id
   instance_type               = var.instance_type
@@ -47,20 +51,30 @@ resource "aws_instance" "worker-1" {
   subnet_id                   = module.vpc.private_subnets[0]
   security_groups             = [aws_security_group.worker-nodes.id]
   source_dest_check           = false
-
   tags = {
     Name = "worker-1"
   }
+
+  # Wait until the join-node script is downloaded from the master node before
+  # Provisioning the worker nodes.
+  depends_on = [null_resource.get_join_script]
 
   provisioner "file" {
     source = "k8s-node-base.sh"
     destination = "/tmp/k8s-node-base.sh"
   }
 
+  provisioner "file" {
+    source = "join-node.sh"
+    destination = "/tmp/join-node.sh"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/k8s-node-base.sh",
-      "sudo /tmp/k8s-node-base.sh"
+      "chmod +x /tmp/join-node.sh",
+      "source /tmp/k8s-node-base.sh",
+      "sudo /tmp/join-node.sh"
     ]
   }
 
@@ -89,15 +103,26 @@ resource "aws_instance" "worker-2" {
     Name = "worker-2"
   }
 
+  # Wait until the join-node script is downloaded from the master node before
+  # Provisioning the worker nodes.
+  depends_on = [null_resource.get_join_script]
+
   provisioner "file" {
     source = "k8s-node-base.sh"
     destination = "/tmp/k8s-node-base.sh"
   }
 
+  provisioner "file" {
+    source = "join-node.sh"
+    destination = "/tmp/join-node.sh"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/k8s-node-base.sh",
-      "sudo /tmp/k8s-node-base.sh"
+      "chmod +x /tmp/join-node.sh",
+      "source /tmp/k8s-node-base.sh",
+      "sudo /tmp/join-node.sh"
     ]
   }
 
@@ -111,6 +136,16 @@ resource "aws_instance" "worker-2" {
     private_key           = file("${local_file.private_key.filename}")
     user                  = "ec2-user"
   }
+}
+
+# The null_resource will wait until all software has been properly installed on all the nodes.
+# As a final step this resource will join the worker nodes to the cluster
+resource "null_resource" "get_join_script" {
+
+  provisioner "local-exec" {
+    command = "ssh-add ${local_file.private_key.filename} && scp -o StrictHostKeyChecking=no ec2-user@${aws_instance.master-1.public_ip}:join-node.sh ."
+  }
+
 }
 
 resource "tls_private_key" "key" {
