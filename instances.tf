@@ -5,6 +5,7 @@ resource "aws_instance" "master-1" {
   associate_public_ip_address = true
   subnet_id                   = module.vpc.public_subnets[0]
   security_groups             = [aws_security_group.master-nodes.id]
+  source_dest_check           = false
 
   tags = {
     Name = "master-1"
@@ -15,10 +16,17 @@ resource "aws_instance" "master-1" {
     destination = "/tmp/k8s-node-base.sh"
   }
 
+  provisioner "file" {
+    source = "k8s-master.sh"
+    destination = "/tmp/k8s-master.sh"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/k8s-node-base.sh",
-      "sudo /tmp/k8s-node-base.sh"
+      "chmod +x /tmp/k8s-master.sh",
+      "source /tmp/k8s-node-base.sh",
+      "source /tmp/k8s-master.sh"
     ]
   }
 
@@ -38,6 +46,7 @@ resource "aws_instance" "worker-1" {
   associate_public_ip_address = false
   subnet_id                   = module.vpc.private_subnets[0]
   security_groups             = [aws_security_group.worker-nodes.id]
+  source_dest_check           = false
 
   tags = {
     Name = "worker-1"
@@ -74,6 +83,7 @@ resource "aws_instance" "worker-2" {
   associate_public_ip_address = false
   subnet_id                   = module.vpc.private_subnets[0]
   security_groups             = [aws_security_group.worker-nodes.id]
+  source_dest_check           = false
 
   tags = {
     Name = "worker-2"
