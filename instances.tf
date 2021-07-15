@@ -142,11 +142,20 @@ resource "aws_instance" "worker-2" {
 # As a final step this resource will join the worker nodes to the cluster
 resource "null_resource" "get_join_script" {
 
+   provisioner "local-exec" {
+     command = "scp -i ${local_file.private_key.filename} -o StrictHostKeyChecking=no ec2-user@${aws_instance.master-1.public_ip}:join-node.sh ."
+   }
+
+ }
+
+ # Get the kubeconfig from the remote system
+ resource "null_resource" "get_kubeconfig" {
+
   provisioner "local-exec" {
-    command = "ssh-add ${local_file.private_key.filename} && scp -o StrictHostKeyChecking=no ec2-user@${aws_instance.master-1.public_ip}:join-node.sh ."
+  command = "scp -i ${local_file.private_key.filename} -o StrictHostKeyChecking=no ec2-user@${aws_instance.master-1.public_ip}:./.kube/config kubeconfig"
   }
 
-}
+ }
 
 resource "tls_private_key" "key" {
   algorithm = "RSA"

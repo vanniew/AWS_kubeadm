@@ -1,7 +1,6 @@
 #! /bin/bash
 
 # This shell script installs all the prequisite components to start a kubernetes node
-# on a new provisioned AWS amazon-linux instance
 # The components installed include docker, kubelet, kubeadm and kubectl
 # Initialization of the master-node with kube-adm is in a different script.
 # This script only contains operations that are the same on worker and master nodes
