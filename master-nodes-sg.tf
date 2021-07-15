@@ -35,6 +35,14 @@ resource "aws_security_group_rule" "ssh_master_nodes" {
   security_group_id = aws_security_group.master-nodes.id
 }
 
+resource "aws_security_group_rule" "api_server_master_nodes" {
+  type              = "ingress"
+  from_port         = 6443
+  to_port           = 6443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.master-nodes.id
+}
 
 resource "aws_security_group_rule" "all_internal_master_nodes" {
   type              = "ingress"
