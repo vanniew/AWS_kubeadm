@@ -8,7 +8,7 @@ resource "aws_instance" "master-1" {
   key_name                    = aws_key_pair.key_pair.key_name
   associate_public_ip_address = true
   subnet_id                   = module.vpc.public_subnets[0]
-  security_groups             = [aws_security_group.master-nodes.id]
+  vpc_security_group_ids      = [aws_security_group.master-nodes.id]
   source_dest_check           = false
 
   tags = {
@@ -49,7 +49,7 @@ resource "aws_instance" "worker-1" {
   key_name                    = aws_key_pair.key_pair.key_name
   associate_public_ip_address = false
   subnet_id                   = module.vpc.private_subnets[0]
-  security_groups             = [aws_security_group.worker-nodes.id]
+  vpc_security_group_ids      = [aws_security_group.worker-nodes.id]
   source_dest_check           = false
   tags = {
     Name = "worker-1"
@@ -96,7 +96,7 @@ resource "aws_instance" "worker-2" {
   key_name                    = aws_key_pair.key_pair.key_name
   associate_public_ip_address = false
   subnet_id                   = module.vpc.private_subnets[0]
-  security_groups             = [aws_security_group.worker-nodes.id]
+  vpc_security_group_ids      = [aws_security_group.worker-nodes.id]
   source_dest_check           = false
 
   tags = {
