@@ -30,7 +30,7 @@ resource "aws_instance" "master-1" {
       "chmod +x /tmp/k8s-node-base.sh",
       "chmod +x /tmp/k8s-master.sh",
       "source /tmp/k8s-node-base.sh",
-      "source /tmp/k8s-master.sh"
+      "source /tmp/k8s-master.sh ${self.public_ip}"
     ]
   }
 

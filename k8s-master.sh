@@ -4,7 +4,9 @@
 # The Calico Operator will automatically install the required Calico CNI network components on all of the nodes
 
 # Run kubeadm
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+# --apiserver-cert-extra-sans is needed to ensure the public IP address of the master
+# instance is added to the Server Alternate Name list on the api-server certificate
+sudo kubeadm init --apiserver-cert-extra-sans $1 --pod-network-cidr=192.168.0.0/16
 
 # Create kube-config for the cluster
 mkdir -p $HOME/.kube
@@ -32,5 +34,6 @@ EOF
 
 kubeadm token create --print-join-command > join-node.sh
 
-# Manually run the command stored in the worker-join-token file on every worker node that joins the cluster.
-# The token expires in 24 hours. After that time expired, create a new token on the master node using the same command.
+# !! Manual step in the process !!
+# At the end of the provisioning process there will be a kubeconfig file in your home directory
+# Copy this file to ~/.kube/config and change the private IP address to the pulbic IP address of your cloud provider
